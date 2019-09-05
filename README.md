@@ -3,7 +3,7 @@ Command line tools to help start sessions on AWS virtual machines
 
 ## Installation
 ### macOS
-1. Download the latest release from the [releases](./releases/) page.
+1. Download the latest release from the [releases](https://github.com/QtonSolutions/sessh/releases/) page.
 2. Set the execute bit on the file: `$ chmod +x /path/to/sessh`
 3. Move the file to `/usr/local/bin`
 
