@@ -3,9 +3,9 @@ Command line tools to help start sessions on AWS virtual machines
 
 ## Installation
 ### macOS
-1. Download the latest release from the [releases](https://github.com/QtonSolutions/sessh/releases/) page.
+1. Download the latest release from the [releases](https://github.com/QtonSolutions/sessh/releases/) page and uncompress it.
 2. Set the execute bit on the file: `$ chmod +x /path/to/sessh`
-3. Move the file to `/usr/local/bin`
+3. Move the file to `/usr/local/bin/sessh`
 
 ## Usage
 ### Quick start
@@ -36,7 +36,7 @@ The configuration format is as follows:
 ```ini
 [bastions]
 # AWS account ID: user@bastion.host.name
-"012345678901" = "bastion.dev.example.com"
+"012345678901" = "ec2-user@bastion.dev.example.com"
 ``` 
 
 If you do not need to connect to the host via a bastion, add the `--public` flag and _sessh_ will connect directly to the public IP address of the instance.
