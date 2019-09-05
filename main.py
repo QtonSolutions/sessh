@@ -318,7 +318,7 @@ class UserConfiguration:
             raise RuntimeError(f"There is no bastion configuration for account {account_id}. Add the configuration in "
                                f"{self._config_file_path}")
 
-        return self._configuration.secget(section_name, account_id)
+        return self._configuration.get(section_name, account_id)
 
 
 def connect_to_instance(name_or_id: str, connect_to_public_ip_address: bool) -> int:
