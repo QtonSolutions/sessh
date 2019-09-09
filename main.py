@@ -2,19 +2,23 @@
 
 import argparse
 import os
-import platform
-import subprocess
+import shutil
 import sys
-from configparser import ConfigParser, RawConfigParser
+from datetime import datetime
 from enum import Enum
 from typing import List, Dict, Optional, Generator
 
 import boto3
 import texttable as tt
 
+import configuration
 import connector
+import environment
 
-aws_region = os.environ.get('AWS_REGION', 'eu-west-1')
+environment_checker = environment.Checker()
+user_configuration = configuration.UserConfiguration(environment_checker)
+
+aws_region = os.environ.get('AWS_DEFAULT_REGION', user_configuration.get_default_region())
 boto3.setup_default_session(region_name=aws_region)
 
 
@@ -24,8 +28,8 @@ class ConnectionType(Enum):
 
 
 class Instance:
-    def __init__(self, instance_id: str, name: str, public_ip: Optional[str], private_ip: Optional[str], launch_time,
-                 connection_type: ConnectionType, ssh_key: Optional[str], state: str):
+    def __init__(self, instance_id: str, name: str, public_ip: Optional[str], private_ip: Optional[str],
+                 launch_time: datetime, connection_type: ConnectionType, ssh_key: Optional[str], state: str):
         self.instance_id = instance_id
         self.name = name
         self.private_ip = private_ip
@@ -48,6 +52,16 @@ class Instance:
 
     def supports_session_manager(self) -> bool:
         return self.connection_type == ConnectionType.SESSION_MANAGER
+
+    def connection_details(self) -> str:
+        if self.supports_ssh():
+            connection_type = f"SSH ({self.ssh_key})"
+        elif self.supports_session_manager():
+            connection_type = "Session Manager"
+        else:
+            connection_type = "Unknown"
+
+        return connection_type
 
 
 class InstancesRepository:
@@ -85,7 +99,7 @@ class InstancesRepository:
 
 class Ec2InstanceMetadata:
     def __init__(self, instance_id: str, public_ip: Optional[str], private_ip: Optional[str], state: str,
-                 launch_time: str, ssh_key_name, tags: List[Dict[str, str]]):
+                 launch_time: datetime, ssh_key_name, tags: List[Dict[str, str]]):
         self.instance_id = instance_id
         self.private_ip = private_ip
         self.public_ip = public_ip
@@ -119,8 +133,6 @@ class Ec2MetadataClient:
 
     def _fetch_metadata(self) -> Generator[Ec2InstanceMetadata, None, None]:
         response = self._client.describe_instances(MaxResults=50)
-        # with open('./responses/ec2.json', 'rb') as j:
-        # response = json.load(j)
 
         for reservations in response['Reservations']:
             for instance in reservations['Instances']:
@@ -151,112 +163,100 @@ class SsmMetadataClient:
 
     def _fetch_metadata(self) -> Dict[str, Dict]:
         response = self._client.describe_instance_information(MaxResults=50)
-        # with open('./responses/ssm.json', 'rb') as j:
-        #     response = json.load(j)
 
         return {i['InstanceId']: i for i in response['InstanceInformationList']}
 
 
 class InstancesDisplayer:
-    @staticmethod
-    def display(instances: List[Instance]):
-        table = tt.Texttable(120)
-        table.header(["Name", "Instance ID", "Launch time", "Connection type"])
+    header_mappings = {
+        'Name': lambda i: i.name,
+        'Instance ID': lambda i: i.instance_id,
+        'Launch time': lambda i: i.launch_time,
+        'Private IP': lambda i: i.private_ip,
+        'Public IP': lambda i: i.public_ip,
+        'Connection type': lambda i: i.connection_details(),
+    }
+    """Maps the table column heading to a lambda that returns the relevant value from the Instance"""
+
+    def __init__(self, table_column_configuration: dict):
+        self._table_column_configuration = table_column_configuration
+
+    def display(self, instances: List[Instance]):
+        table = self._start_table()
+
+        table.header(self.get_chosen_headers())
 
         for instance in instances:
-            connection_type = InstancesDisplayer.generate_connection_type(instance)
-
-            table.add_row([instance.name, instance.instance_id, instance.launch_time, connection_type])
+            table.add_row(self.get_instance_details(self.get_chosen_headers(), instance))
 
         print(table.draw())
 
-    @staticmethod
-    def generate_connection_type(instance: Instance) -> str:
-        if instance.supports_ssh():
-            connection_type = f"SSH ({instance.ssh_key})"
-        elif instance.supports_session_manager():
-            connection_type = "Session Manager"
-        else:
-            connection_type = "Unknown"
-        return connection_type
+    def _start_table(self) -> tt.Texttable:
+        # Make the table at least 120 columns wide, but bigger if the terminal is currently wider.
+        terminal_columns = shutil.get_terminal_size().columns
+        table_width = max(terminal_columns, 120)
+        table = tt.Texttable(table_width)
+
+        return table
+
+    def get_chosen_headers(self) -> List[str]:
+        """Get the headers that have been chosen by the user in the configuration file."""
+        chosen_headers = []
+
+        for header, is_chosen in self._table_column_configuration.items():
+            if is_chosen:
+                chosen_headers.append(header)
+
+        return chosen_headers
+
+    def get_instance_details(self, chosen_headers: List[str], instance: Instance) -> List[str]:
+        instance_details = []
+
+        for header_name in chosen_headers:
+            instance_details.append(self.get_instance_value_for_header(header_name, instance))
+
+        return instance_details
+
+    def get_instance_value_for_header(self, header_name, instance: Instance) -> Optional[str]:
+        return self.header_mappings[header_name](instance)
+
+    def displayIndexed(self, instances: List[Instance]):
+        table = self._start_table()
+
+        # Add a # as the first column so a user can choose the instance they want to connect to
+        headers = ['#']
+        headers.extend(self.get_chosen_headers())
+        table.header(headers)
+
+        for index, instance in enumerate(instances):
+            instance_index = str(index)
+            instance_details = [instance_index]
+            instance_details.extend(self.get_instance_details(self.get_chosen_headers(), instance))
+            table.add_row(instance_details)
+
+        print(table.draw())
 
 
 def list_instances() -> int:
     instances = InstancesRepository().running()
-    InstancesDisplayer.display(instances)
+    InstancesDisplayer(user_configuration.configuration.GENERAL['list']['table_headings']).display(instances)
 
     return 0
 
 
 def choose_instance(instances: List[Instance]) -> Instance:
+    displayer = InstancesDisplayer(user_configuration.get_table_configuration())
+
     while True:
-        table = tt.Texttable(120)
-        table.header(["", "Instance ID", "Launch time", "Connection type"])
+        displayer.displayIndexed(instances)
 
-        for i, instance in enumerate(instances):
-            table.add_row([i, instance.instance_id, instance.launch_time,
-                           InstancesDisplayer.generate_connection_type(instance)])
-
-        print(table.draw())
+        # Pick first instance as the default
         choice = input('Select an instance to connect to [0]: ') or 0
 
         try:
             return instances[int(choice)]
         except (IndexError, ValueError):
             pass
-
-
-class EnvironmentChecker:
-    @staticmethod
-    def running_on_macos() -> bool:
-        return platform.system() == 'Darwin'
-
-    @staticmethod
-    def running_on_windows() -> bool:
-        return platform.system() == 'Windows'
-
-    @staticmethod
-    def running_on_linux() -> bool:
-        return platform.system() == 'Linux'
-
-    @staticmethod
-    def aws_cli_tools_installed_on_macos_or_linux() -> bool:
-        return subprocess.run(['command', '-v', 'aws'], capture_output=True).returncode == 0
-
-    @staticmethod
-    def aws_cli_session_manager_plugin_installed_on_macos_or_linux() -> bool:
-        return subprocess.run(['command', '-v', 'session-manager-plugin'], capture_output=True).returncode == 0
-
-    @staticmethod
-    def aws_cli_tools_installed_on_windows() -> bool:
-        return subprocess.run(['where', 'aws'], capture_output=True).returncode == 0
-
-    @staticmethod
-    def aws_cli_session_manager_plugin_installed_on_windows() -> bool:
-        return subprocess.run(['where', 'session-manager-plugin'], capture_output=True).returncode == 0
-
-    def aws_cli_tools_installed(self) -> bool:
-        if self.running_on_macos() or self.running_on_linux():
-            return self.aws_cli_tools_installed_on_macos_or_linux()
-        if self.running_on_windows():
-            return self.aws_cli_tools_installed_on_windows()
-
-        print("Unable to determine the operating system for your computer. I support Linux, macOS, and Windows.")
-
-        return False
-
-    def aws_cli_session_manager_plugin_installed(self) -> bool:
-        if self.running_on_macos() or self.running_on_linux():
-            return self.aws_cli_session_manager_plugin_installed_on_macos_or_linux()
-        if self.running_on_windows():
-            return self.aws_cli_session_manager_plugin_installed_on_windows()
-
-        print("Unable to determine the operating system for your computer. I support Linux, macOS, and Windows.")
-
-        return False
-
-    def is_running_on_supported_os(self) -> bool:
-        return self.running_on_macos() or self.running_on_windows() or self.running_on_linux()
 
 
 class AccountMetadataClient(object):
@@ -271,60 +271,7 @@ class AccountMetadataClient(object):
         return self._client.get_caller_identity()
 
 
-class UserConfiguration:
-    def __init__(self):
-        self._environment = EnvironmentChecker()
-        self._config_file_path = self._generate_path_to_config_file()
-        self._configuration = self._load()
-
-    def _load(self):
-        if self._configuration_file_exists():
-            return self._parse_configuration()
-
-        self._create_empty_configuration_file()
-
-    def _configuration_file_exists(self) -> bool:
-        return os.path.isfile(self._config_file_path)
-
-    def _parse_configuration(self) -> Optional[RawConfigParser]:
-        config = ConfigParser()
-        config.read(self._config_file_path)
-
-        return config
-
-    def _generate_path_to_config_file(self) -> str:
-        filename = 'sessh.ini'
-        folder_name = 'sessh'
-
-        if self._environment.running_on_windows():
-            return os.path.expandvars(f'%APPDATA%/{filename}')
-
-        if self._environment.running_on_linux() or self._environment.running_on_macos():
-            configured_config_home = os.environ.get('XDG_CONFIG_HOME')
-
-            if configured_config_home:
-                return os.path.join(configured_config_home, folder_name, filename)
-
-            return os.path.expanduser(f'~/.config/{folder_name}/{filename}')
-
-    def _create_empty_configuration_file(self):
-        os.makedirs(os.path.dirname(self._config_file_path), exist_ok=True, mode=0o770)
-        open(self._config_file_path, 'a').close()
-
-    def get_bastion_connection_details_for_account(self, account_id: str) -> str:
-        section_name = 'bastions'
-
-        if not self._configuration.has_section(section_name):
-            raise RuntimeError(f"There is no bastion configuration for account {account_id}. Add the configuration in "
-                               f"{self._config_file_path}")
-
-        return self._configuration.get(section_name, account_id)
-
-
 def connect_to_instance(name_or_id: str, connect_to_public_ip_address: bool) -> int:
-    environment = EnvironmentChecker()
-    configuration = UserConfiguration()
-
     instances = InstancesRepository()
 
     # Instance ID specified
@@ -357,18 +304,18 @@ def connect_to_instance(name_or_id: str, connect_to_public_ip_address: bool) -> 
             return connector.SshDirectConnector(matching_instance.public_ip).connect()
 
         else:
-            bastion_for_account = configuration.get_bastion_connection_details_for_account(client.get_account_id())
+            bastion_for_account = user_configuration.get_bastion_connection_details_for_account(client.get_account_id())
 
             return connector.SshBastionConnector(bastion_for_account, matching_instance.private_ip).connect()
 
     if matching_instance.supports_session_manager():
-        if not environment.aws_cli_tools_installed():
+        if not environment_checker.aws_cli_tools_installed():
             print("The AWS Command Line Tools must be installed. Visit https://aws.amazon.com/cli/ for instructions.")
             print("You can also connect to the instance in your browser by visiting "
                   "https://eu-west-1.console.aws.amazon.com/systems-manager/managed-instances?region=eu-west-1")
             return 2
 
-        if not environment.aws_cli_session_manager_plugin_installed():
+        if not environment_checker.aws_cli_session_manager_plugin_installed():
             print("The Session Manager Plugin for the AWS CLI must be installed. Visit "
                   "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html "
                   "for instructions.")

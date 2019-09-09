@@ -1,5 +1,6 @@
-# sessh
-Command line tools to help start sessions on AWS virtual machines 
+![sessh](./assets/sessh.png)
+
+Command line tool to help start sessions on AWS EC2 instances. 
 
 ## Installation
 ### macOS
@@ -22,6 +23,11 @@ Command line tools to help start sessions on AWS virtual machines
 
    > *Note:* Make sure the SSH key has been added to your SSH keychain before trying to connect to an instance with the SSH instance type.
 
+### Configuration
+Configuration is managed in a configuration file, with a small number of overrides that are specific with command line arguments.
+
+The configuration file file is stored in `~/.config/sessh/config.py` on macOS and Linux, and `%APPDATA%/sessh/config.py` on Windows. A default template is created when you first run the script.
+
 ### Listing instances
 `sessh list` outputs a table with details of the running EC2 instances for the AWS account your credentials are associated with.
 
@@ -30,14 +36,7 @@ The "Connection type" column shows the method which _sessh_ has determined will 
 ### Connecting to instances
 `sessh connect [instance id|instance name]` attempts to connect to the instance using either Session Manager or SSH, depending on what _sessh_ thinks is available.
 
-For SSH connections, _sessh_ will by default assume you want to connect via a bastion. It requires you to configure the bastion connection details (username and IP address/hostname) in a `sessh.ini` file. This file is stored in `~/.config/sessh/sessh.ini` on macOS and Linux, and `%APPDATA%/sessh.ini` on Windows.
-
-The configuration format is as follows:
-```ini
-[bastions]
-# AWS account ID: user@bastion.host.name
-"012345678901" = "ec2-user@bastion.dev.example.com"
-``` 
+For SSH connections, _sessh_ will by default assume you want to connect via a bastion. It requires you to configure the bastion connection details (username and IP address/hostname). 
 
 If you do not need to connect to the host via a bastion, add the `--public` flag and _sessh_ will connect directly to the public IP address of the instance.
 
