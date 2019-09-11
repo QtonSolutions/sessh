@@ -323,7 +323,7 @@ def connect_to_instance(name_or_id: str, connect_to_public_ip_address: bool) -> 
                   "https://eu-west-1.console.aws.amazon.com/systems-manager/managed-instances?region=eu-west-1")
             return 3
 
-        return connector.SessionManagerConnector(matching_instance.instance_id).connect()
+        return connector.SessionManagerConnector(matching_instance.instance_id, user_configuration.get_default_region()).connect()
 
     print(f"{matching_instance.instance_id} doesn't seem to support SSH or Session Manager so I can't help you, "
           f"unfortunately.")

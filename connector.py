@@ -4,11 +4,14 @@ import subprocess
 class SessionManagerConnector:
     """Connect to an EC2 instance using Systems Manager Session Manager."""
 
-    def __init__(self, instance_id: str):
+    def __init__(self, instance_id: str, region: str):
         self._instance_id = instance_id
+        self._region = region
 
     def connect(self) -> int:
-        return subprocess.run(['aws', 'ssm', 'start-session', '--target', self._instance_id]).returncode
+        return subprocess.run(
+            ['aws', 'ssm', 'start-session', '--target', self._instance_id, '--region', self._region]
+        ).returncode
 
 
 class SshBastionConnector:
