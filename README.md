@@ -11,8 +11,12 @@ Command line tool to help start sessions on AWS EC2 instances.
 ## Usage
 ### Quick start
 1. Make sure your AWS credentials are available in your terminal.
-   1. `export AWS_PROFILE=account-name` (recommended)
-   2. `export AWS_ACCESS_KEY_ID=aabbcc AWS_SECRET_ACCESS_KEY=secret`
+   1. macOS/Linux
+      1. `export AWS_PROFILE=account-name` (recommended)
+      2. `export AWS_ACCESS_KEY_ID=aabbcc AWS_SECRET_ACCESS_KEY=secret`
+   2. Windows PowerShell
+      1. `$env:AWS_PROFILE = "account-name"` (recommended)
+      2. `$env:AWS_ACCESS_KEY_ID = "aabbcc"; $env:AWS_SECRET_ACCESS_KEY = "secret"`
 2. List instances for the chosen AWS account
      
      `$ sessh list` 
