@@ -81,6 +81,6 @@ Executables can only be built for the environment that PyInstaller is run in. E.
 
 3. Create the executable
 
-    `$ pyinstaller main.py --noconfirm --onefile --name sessh`  
+    `$ pyinstaller main.py --hidden-import=configparser --noconfirm --onefile --name sessh`  
 
 The executable file is at `./dist/sessh`
