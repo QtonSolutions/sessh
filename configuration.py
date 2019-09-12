@@ -5,6 +5,18 @@ import sys
 import environment
 
 
+def resource_path(relative_path):
+    """ Get absolute path to resource. Works for development and for PyInstaller created binaries."""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        # Fall back to current directory if sys._MEIPASS is not set
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 class UserConfiguration:
     def __init__(self, environment: environment.Checker):
         self._environment = environment
@@ -41,7 +53,7 @@ class UserConfiguration:
 
     def _create_initial_configuration_file(self):
         os.makedirs(os.path.dirname(self._config_file_path), exist_ok=True, mode=0o770)
-        shutil.copyfile('./config.default.py', self._config_file_path)
+        shutil.copyfile(resource_path('config.default.py'), self._config_file_path)
 
     def get_table_configuration(self) -> dict:
         return self.configuration.GENERAL['list']['table_headings']
