@@ -77,7 +77,7 @@ Select an instance to connect to [0]:
 # Building executables
 [PyInstaller](http://www.pyinstaller.org) is used to create single executable files to make installing _sessh_ simpler.
 
-Executables can only be built for the environment that PyInstaller is run in. E.g. a macOS version can only be built in macOS. So far only macOS executables have been built but Windows and Linux executables are planned.
+Executables can only be built for the environment that PyInstaller is run in. E.g. a macOS version can only be built in macOS. Executables have been built for macOS and Windows, with Linux builds planned.
 
 ## Steps
 > _*Note:* sessh_ requires Python 3.x so make sure it is already installed on your system.
@@ -94,7 +94,13 @@ Executables can only be built for the environment that PyInstaller is run in. E.
     `$ pip install -r requirements.txt`
 
 3. Create the executable
-
-    `$ pyinstaller main.py --hidden-import=configparser --noconfirm --onefile --name sessh`  
+    
+    *macOs*
+    
+    `$ pyinstaller main.py --add-data "config.default.py:." --hidden-import=configparser --noconfirm --onefile --name sessh`
+    
+    *Windows*  
+    
+    `$ pyinstaller main.py --add-data "config.default.py;." --hidden-import=configparser --noconfirm --onefile --name sessh`
 
 The executable file is at `./dist/sessh`
