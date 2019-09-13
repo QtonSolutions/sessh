@@ -4,9 +4,19 @@ Command line tool to help start sessions on AWS EC2 instances.
 
 ## Installation
 ### macOS
+1. Install [Homebrew](https://brew.sh)
+2. Add our custom tap: `brew tap qtonsolutions/tap`
+3. Install _sessh_: `brew install sessh`
+4. Done! _sessh_ is now available in your terminal.
+
+> *Updating* Run `brew update && brew upgrade sessh` to upgrade to the latest version of _sessh_.
+
+### Windows
 1. Download the latest release from the [releases](https://github.com/QtonSolutions/sessh/releases/) page and uncompress it.
-2. Set the execute bit on the file: `$ chmod +x /path/to/sessh`
-3. Move the file to `/usr/local/bin/sessh`
+2. Move the file to a folder in your `%PATH%`
+3. Done! `sessh.exe` is now available in your command prompt.
+
+> *Updating* You will need to manually download the latest version and replace the old binary.
 
 ## Usage
 ### Quick start
