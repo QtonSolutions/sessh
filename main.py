@@ -134,19 +134,21 @@ class Ec2MetadataClient:
         return [i for i in self._instances if i.is_running()]
 
     def _fetch_metadata(self) -> Generator[Ec2InstanceMetadata, None, None]:
-        response = self._client.describe_instances(MaxResults=50)
+        paginator = self._client.get_paginator('describe_instances')
+        page_iterator = paginator.paginate()
 
-        for reservations in response['Reservations']:
-            for instance in reservations['Instances']:
-                yield Ec2InstanceMetadata(
-                    instance['InstanceId'],
-                    instance.get('PublicIpAddress'),
-                    instance.get('PrivateIpAddress'),
-                    instance['State']['Name'],
-                    instance['LaunchTime'],
-                    instance.get('KeyName'),
-                    instance['Tags']
-                )
+        for page in page_iterator:
+            for reservations in page['Reservations']:
+                for instance in reservations['Instances']:
+                    yield Ec2InstanceMetadata(
+                        instance['InstanceId'],
+                        instance.get('PublicIpAddress'),
+                        instance.get('PrivateIpAddress'),
+                        instance['State']['Name'],
+                        instance['LaunchTime'],
+                        instance.get('KeyName'),
+                        instance['Tags']
+                    )
 
 
 class SsmMetadataClient:
@@ -164,9 +166,17 @@ class SsmMetadataClient:
         return self._instances[instance_id]
 
     def _fetch_metadata(self) -> Dict[str, Dict]:
-        response = self._client.describe_instance_information(MaxResults=50)
+        paginator = self._client.get_paginator('describe_instance_information')
+        page_iterator = paginator.paginate()
 
-        return {i['InstanceId']: i for i in response['InstanceInformationList']}
+        metadata = {}
+
+        for page in page_iterator:
+            for instance_info in page['InstanceInformationList']:
+                instance_id = instance_info['InstanceId']
+                metadata[instance_id] = instance_info
+
+        return metadata
 
 
 class InstancesDisplayer:
