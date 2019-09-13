@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 
-import argparse
-import os
-import shutil
 import sys
+
+import argparse
+import boto3
+import os
+import platform
+import shutil
+import texttable as tt
 from datetime import datetime
 from enum import Enum
 from typing import List, Dict, Optional, Generator
 
-import boto3
-import texttable as tt
-
 import configuration
 import connector
 import environment
+from __init__ import __version__
 
 environment_checker = environment.Checker()
 user_configuration = configuration.UserConfiguration(environment_checker)
@@ -330,14 +332,24 @@ def connect_to_instance(name_or_id: str, connect_to_public_ip_address: bool) -> 
           f"unfortunately.")
 
 
+def version_information() -> int:
+    print(f"sessh/{__version__} Python/{platform.python_version()}")
+    print(f"Configuration file path: {user_configuration.get_file_path()}")
+
+    return 0
+
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Command line tool to help start sessions on AWS EC2 instances")
+    parser.add_argument('--version', help="display version information", action='store_true', default=False)
     subparsers = parser.add_subparsers(dest='action')
-    list_command = subparsers.add_parser('list')
-    connect_command = subparsers.add_parser('connect')
-    connect_command.add_argument('instance', help='EC2 instance ID or EC2 instance name')
-    connect_command.add_argument('--public', '-p', help='Connect to the public IP address instead of the private one',
+    list_command = subparsers.add_parser('list', help="list running EC2 instances")
+    connect_command = subparsers.add_parser('connect', help="connect to a running EC2 instance")
+    connect_command.add_argument('instance', help="EC2 instance ID or EC2 instance name")
+    connect_command.add_argument('--public', '-p', help="connect to the public IP address instead of the private one",
                                  action='store_true', default=False)
+    version_command = subparsers.add_parser('--version')
+
     args = parser.parse_args()
 
     if args.action == 'list':
@@ -345,3 +357,8 @@ if __name__ == '__main__':
 
     if args.action == 'connect':
         sys.exit(connect_to_instance(args.instance, args.public))
+
+    if args.version:
+        sys.exit(version_information())
+
+    parser.print_help()

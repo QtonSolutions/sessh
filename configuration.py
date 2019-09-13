@@ -1,6 +1,7 @@
+import sys
+
 import os
 import shutil
-import sys
 
 import environment
 
@@ -80,3 +81,6 @@ class UserConfiguration:
 
     def get_default_region(self) -> str:
         return self.configuration.GENERAL['aws']['region']
+
+    def get_file_path(self) -> str:
+        return self._config_file_path
