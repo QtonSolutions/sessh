@@ -21,7 +21,7 @@ environment_checker = environment.Checker()
 user_configuration = configuration.UserConfiguration(environment_checker)
 
 aws_region = os.environ.get('AWS_DEFAULT_REGION', user_configuration.get_default_region())
-boto3.setup_default_session(region_name=aws_region)
+
 
 
 class ConnectionType(Enum):
@@ -362,13 +362,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.action == 'list':
-        sys.exit(list_instances())
+    try:
+        boto3.setup_default_session(region_name=aws_region)
 
-    if args.action == 'connect':
-        sys.exit(connect_to_instance(args.instance, args.public))
+        if args.action == 'list':
+            sys.exit(list_instances())
 
-    if args.version:
-        sys.exit(version_information())
+        if args.action == 'connect':
+            sys.exit(connect_to_instance(args.instance, args.public))
+
+        if args.version:
+            sys.exit(version_information())
+    except Exception as e:
+        print(e)
+        sys.exit(1)
 
     parser.print_help()
