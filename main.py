@@ -4,6 +4,7 @@ import sys
 
 import argparse
 import boto3
+import logging
 import os
 import platform
 import shutil
@@ -21,7 +22,6 @@ environment_checker = environment.Checker()
 user_configuration = configuration.UserConfiguration(environment_checker)
 
 aws_region = os.environ.get('AWS_DEFAULT_REGION', user_configuration.get_default_region())
-
 
 
 class ConnectionType(Enum):
@@ -232,7 +232,7 @@ class InstancesDisplayer:
     def get_instance_value_for_header(self, header_name, instance: Instance) -> Optional[str]:
         return self.header_mappings[header_name](instance)
 
-    def displayIndexed(self, instances: List[Instance]):
+    def display_indexed(self, instances: List[Instance]):
         table = self._start_table()
 
         # Add a # as the first column so a user can choose the instance they want to connect to
@@ -260,7 +260,7 @@ def choose_instance(instances: List[Instance]) -> Instance:
     displayer = InstancesDisplayer(user_configuration.get_table_configuration())
 
     while True:
-        displayer.displayIndexed(instances)
+        displayer.display_indexed(instances)
 
         # Pick first instance as the default
         choice = input('Select an instance to connect to [0]: ') or 0
@@ -350,19 +350,28 @@ def version_information() -> int:
 
 
 if __name__ == '__main__':
+    common_arguments = argparse.ArgumentParser(add_help=False)
+    common_arguments.add_argument('--debug', help="output debug information", action='store_true', default=False)
+
     parser = argparse.ArgumentParser(description="Command line tool to help start sessions on AWS EC2 instances")
     parser.add_argument('--version', help="display version information", action='store_true', default=False)
     subparsers = parser.add_subparsers(dest='action')
-    list_command = subparsers.add_parser('list', help="list running EC2 instances")
-    connect_command = subparsers.add_parser('connect', help="connect to a running EC2 instance")
+    list_command = subparsers.add_parser('list', help="list running EC2 instances", parents=[common_arguments])
+    connect_command = subparsers.add_parser('connect', help="connect to a running EC2 instance",
+                                            parents=[common_arguments])
     connect_command.add_argument('instance', help="EC2 instance ID or EC2 instance name")
     connect_command.add_argument('--public', '-p', help="connect to the public IP address instead of the private one",
                                  action='store_true', default=False)
-    version_command = subparsers.add_parser('--version')
 
     args = parser.parse_args()
 
     try:
+        if args.version:
+            sys.exit(version_information())
+
+        logging_level = logging.DEBUG if args.debug else logging.WARNING
+        logging.basicConfig(level=logging_level)
+
         boto3.setup_default_session(region_name=aws_region)
 
         if args.action == 'list':
@@ -370,9 +379,6 @@ if __name__ == '__main__':
 
         if args.action == 'connect':
             sys.exit(connect_to_instance(args.instance, args.public))
-
-        if args.version:
-            sys.exit(version_information())
     except Exception as e:
         print(e)
         sys.exit(1)

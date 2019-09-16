@@ -1,3 +1,4 @@
+import logging
 import sys
 
 import os
@@ -20,16 +21,18 @@ def resource_path(relative_path):
 
 class UserConfiguration:
     def __init__(self, environment: environment.Checker):
+        self._logger = logging.getLogger(__name__)
         self._environment = environment
         self._config_file_path = self._generate_path_to_config_file()
         self.configuration = self._load()
 
     def _load(self):
         if not self._configuration_file_exists():
+            self._logger.debug(f"No existing configuration file not found in {self.get_file_path()}")
             self._create_initial_configuration_file()
 
         # A user configuration path and import it
-        sys.path.append(os.path.abspath(os.path.dirname(self._config_file_path)))
+        sys.path.append(os.path.abspath(os.path.dirname(self.get_file_path())))
         import config
 
         return config
@@ -53,8 +56,11 @@ class UserConfiguration:
             return os.path.expanduser(f'~/.config/{folder_name}/{filename}')
 
     def _create_initial_configuration_file(self):
-        os.makedirs(os.path.dirname(self._config_file_path), exist_ok=True, mode=0o770)
-        shutil.copyfile(resource_path('config.default.py'), self._config_file_path)
+        directory_path = os.path.dirname(self.get_file_path())
+        self._logger.debug(f"Creating configuration file folders: {directory_path}")
+        os.makedirs(directory_path, exist_ok=True, mode=0o770)
+        self._logger.debug(f"Copying template configuration to {self.get_file_path()}")
+        shutil.copyfile(resource_path('config.default.py'), self.get_file_path())
 
     def get_table_configuration(self) -> dict:
         return self.configuration.GENERAL['list']['table_headings']
@@ -70,12 +76,12 @@ class UserConfiguration:
                 return f'{bastion_user}@{bastion_host}'
 
         raise RuntimeError(f"There is no bastion configuration for account {account_id}. Add the configuration in "
-                           f"{self._config_file_path}")
+                           f"{self.get_file_path()}")
 
     def get_account_alias(self, account_id: str) -> str:
         if account_id not in self.configuration.GENERAL['aws']['accounts']:
             raise RuntimeError(f"There is no AWS account alias configuration for account {account_id}. Add the "
-                               f"configuration in {self._config_file_path}")
+                               f"configuration in {self.get_file_path()}")
 
         return self.configuration.GENERAL['aws']['accounts'][account_id]['alias']
 
