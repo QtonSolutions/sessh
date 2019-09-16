@@ -147,7 +147,7 @@ class Ec2MetadataClient:
                         instance['State']['Name'],
                         instance['LaunchTime'],
                         instance.get('KeyName'),
-                        instance['Tags']
+                        instance.get('Tags', {})
                     )
 
 
