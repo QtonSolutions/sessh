@@ -1,5 +1,9 @@
 if: tag IS present
 
+# Required to allow updating CHANGELOG.md after a build
+git:
+  depth: false
+
 language: python
 cache: pip
 install:
