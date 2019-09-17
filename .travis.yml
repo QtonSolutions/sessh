@@ -5,7 +5,7 @@ matrix:
     - name: "Python 3.7.1 on Xenial Linux"
       python: 3.7           # this works for Linux but is ignored on macOS or Windows
       before_deploy: "gzip -c dist/sessh > dist/sessh-${TRAVIS_OS_NAME}.gz"
-      deploy:
+      deploy: &deploy_base
         provider: releases
         skip_cleanup: true
         api_key:
@@ -13,12 +13,12 @@ matrix:
         file_glob: true
         file:
           - dist/sessh-*.gz
-        draft: true
+        draft: false
         edge: true
-        # name:
+        name: ${TRAVIS_BRANCH}
         on:
-          all_branches: true
-          tags: false
+          all_branches: false
+          tags: true
 #    - name: "Python 3.7.4 on macOS"
 #      os: osx
 #      osx_image: xcode11    # Python 3.7.4 running on macOS 10.14.4
