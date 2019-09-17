@@ -29,3 +29,4 @@ deploy:
   file: dist/*
   draft: true
   all_branches: true
+  tags: false
