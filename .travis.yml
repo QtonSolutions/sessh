@@ -28,3 +28,4 @@ deploy:
   file_glob: true
   file: dist/*
   draft: true
+  all_branches: true
