@@ -29,7 +29,7 @@ matrix:
         # From env.global.secure
         api_key: ${GH_TOKEN}
         file_glob: true
-        file: dist/sessh-.gz
+        file: dist/sessh-*.gz
         draft: false
         edge:
           # https://github.com/travis-ci/dpl/issues/1102
