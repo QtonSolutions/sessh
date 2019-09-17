@@ -1,5 +1,9 @@
 if: tag IS present
 
+env:
+  global:
+    secure: OwYJV9hxuwJ0O2tnbzjQdgfu9h6MiCaeBgkiwuExU7drYsckQXdQQ49m9YpXd5Aj1poaTNbC24t23UxUaFqE+ST4loScEhxwvM6CipjkSRf7Fs91jdhqOcjgO7Rw37J3WIAxuIy/7SYX0zfmf1rLKaoz+mY1Bld2cbTZytXvONXOMJj4Btoq8zAWLBT5sybHJBztiiYRE8l/gR1CyYuw5SL/kLBK0VIHACtF+H7olELksUf/gnPktbJXgDz3XZbvbOTY/pcymPsHxmJXKIjik7kX0s0SXkWtKFGPo7gcjsNpE0oxUCmAwy6DaTeTumUuOW4GqrJwTPBqtu946Qe2Ubx+QBMevJk6Y6KmRip9pkZNO09/qyVkC4BJ3KTA8pW6VAwtaw11yO58/dwHmQKPGRGEzkozEJvGKk8wXx7wBvlRLdtwP84SvqGhkxkFS8BRCw6MbYVIHdxkrJBUG+/wXjej3UU/7xIvWIXvp65HYo46UUxnMtvksH3+vwabrFqH4YhKZS5Ru0+R8lzaY0xMbvLBkWan9Ps3/vaXMGkddTN8fukeWL0Vt83399J95+s0k1xxi0DitywwaId60MPDxzPxb4vaMbHxD6mgDsmKsp2KMdPCQC5aUSPUXhJdOqKtY6syqWswqhGa2YPOiy9cIZJqwsF+Uovqc7l8Rmynv3Y=
+
 # Required to allow updating CHANGELOG.md after a build
 git:
   depth: false
@@ -12,6 +16,8 @@ install:
 # 'python' points to Python 2.7 on macOS but points to Python 3.7 on Linux and Windows
 # 'python3' is a 'command not found' error on Windows but 'py' works on Windows only
 after_script:
+  - git config credential.helper "store --file=.git/credentials"
+  - echo "https://${GH_TOKEN}:@github.com" > .git/credentials
   - git config --local user.name "Travis CI"
   - git config --local user.email "noreply@sms-plc.com"
   - python3 scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH} || python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
@@ -30,8 +36,8 @@ matrix:
       deploy: &deploy_base
         provider: releases
         skip_cleanup: true
-        api_key:
-          secure: RDjNxhGNUUiZZhuTItsrdF48h3Hc+fT3xD58b7+H6P8bCJLeM3GFnTVeMX4xqZ2nr4bMV79mMj/HhBy8pmlSieS6zTnYmNB7rHuO/ZPJiKbgzUhxs6QUWAPFPQJ6gv8LBeP+SVgEnpa2jdGw8WE2lijw5TvdDMh1YgrF02chZkdnXD8I8QC+ZHCLroa5XCqa5FE44aMPdj6Mx52VV1UWLqqV/l1w/wy/wfOhyfuNzKxRLnqtYPnwJeSuP2GDLjoWSedoZGDVxkN91unzlNeqHMLvTHrt6H7kqnBifxq8aZu2VXMx1wSqUqAhKc35H7L6yQI9d7IUBtLCZkPexskEBN0MmzvWmKDyDKnv372ZzrKzJHR2og+cHGdAVFZdwTTxHJrPZm9PIAa20RC5hAb62FuVTtEUXZonyL++2R+I9QFTJHvhmpssblgwxnRRJhUb8iRSF+X5NnBks1Ru0RkGc8ikUJjCb7caEVEaAvDOyEMgBI3Osm0An46h16Y+c5sQiMpZT5Fvyit7J1idIPx8ulD55r1p8C+FjG1pggJBC1Sgh9biCUaUSSNOUWvk+j2rxW/OgtVjJ41NrQKdjsUqw6msZYeZqJ7C9/REQ+Bg5GVvjIiilK/14SkV5K52xGgkS9QdzfFikmhPB3IIBkc6IBfl7crSVuoS/I5F7IO3Mck=
+        # From env.global.secure
+        api_key: ${GH_TOKEN}
         file_glob: true
         file:
           - dist/sessh-*
