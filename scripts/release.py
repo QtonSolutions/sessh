@@ -3,15 +3,15 @@ import subprocess
 import sys
 
 
-def running_on_macos() -> bool:
+def running_on_macos():
     return platform.system() == 'Darwin'
 
 
-def running_on_windows() -> bool:
+def running_on_windows():
     return platform.system() == 'Windows'
 
 
-def running_on_linux() -> bool:
+def running_on_linux():
     return platform.system() == 'Linux'
 
 
