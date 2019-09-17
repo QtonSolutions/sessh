@@ -29,8 +29,7 @@ matrix:
         # From env.global.secure
         api_key: ${GH_TOKEN}
         file_glob: true
-        file:
-          - dist/sessh-*
+        file: dist/sessh-.gz
         draft: false
         edge:
           # https://github.com/travis-ci/dpl/issues/1102
@@ -67,6 +66,7 @@ matrix:
       before_deploy: 7za.exe a -tzip dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.zip dist/sessh.exe
       deploy:
         <<: *deploy_base
+        file: dist/sessh-.zip
         # dpl doesn't seem to work on Windows at the moment
         edge: false
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
