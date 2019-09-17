@@ -15,16 +15,6 @@ install:
   - pip3 install -r requirements.txt
 # 'python' points to Python 2.7 on macOS but points to Python 3.7 on Linux and Windows
 # 'python3' is a 'command not found' error on Windows but 'py' works on Windows only
-after_script:
-  - git config credential.helper "store --file=.git/credentials"
-  - echo "https://${GH_TOKEN}:@github.com" > .git/credentials
-  - git config --local user.name "Travis CI"
-  - git config --local user.email "noreply@sms-plc.com"
-  - python3 scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH} || python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
-  - git checkout develop
-  - git add CHANGELOG.md
-  - git commit -m "Update changelog for ${TRAVIS_BRANCH}"
-  - git push
 script: python3 scripts/release.py || python scripts/release.py
 matrix:
   include:
@@ -50,6 +40,17 @@ matrix:
         on:
           all_branches: false
           tags: true
+      # This should only be done once per build so pick the Linux machine because it normally finishes first
+      after_script:
+        - git config credential.helper "store --file=.git/credentials"
+        - echo "https://${GH_TOKEN}:@github.com" > .git/credentials
+        - git config --local user.name "Travis CI"
+        - git config --local user.email "noreply@sms-plc.com"
+        - python3 scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH} || python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
+        - git checkout develop
+        - git add CHANGELOG.md
+        - git commit -m "Update CHANGELOG.md after building ${TRAVIS_BRANCH}"
+        - git push
     - name: "Python 3.7.4 on macOS"
       os: osx
       osx_image: xcode11    # Python 3.7.4 running on macOS 10.14.4
