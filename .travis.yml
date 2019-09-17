@@ -7,8 +7,15 @@ install:
   - pip3 install -r requirements.txt
 # 'python' points to Python 2.7 on macOS but points to Python 3.7 on Linux and Windows
 # 'python3' is a 'command not found' error on Windows but 'py' works on Windows only
-before_script:
+before_deploy:
   - python3 scripts/create_release_notes.py ./CHANGELOG.md ./release_notes.md || python scripts/create_release_notes.py ./CHANGELOG.md ./release_notes.md
+after_script:
+  - git config --local user.name "Travis CI"
+  - git config --local user.email "noreply@sms-plc.com"
+  - python3 scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH} || python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
+  - git add CHANGELOG.md
+  - git commit -m "Update changelog for ${TRAVIS_BRANCH}"
+  - git push
 script: python3 scripts/release.py || python scripts/release.py
 matrix:
   include:
