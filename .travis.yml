@@ -14,7 +14,6 @@ matrix:
         file:
           - dist/sessh-*.gz
         draft: false
-        edge: true
         name: ${TRAVIS_BRANCH}
         on:
           all_branches: false
