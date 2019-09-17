@@ -11,6 +11,7 @@ after_script:
   - git config --local user.name "Travis CI"
   - git config --local user.email "noreply@sms-plc.com"
   - python3 scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH} || python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
+  - git checkout develop
   - git add CHANGELOG.md
   - git commit -m "Update changelog for ${TRAVIS_BRANCH}"
   - git push
