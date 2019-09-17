@@ -14,9 +14,9 @@ matrix:
         file:
           - dist/sessh-*
         draft: false
-        edge: true
+#        edge: true
         name: ${TRAVIS_BRANCH}
-        release_notes: "Foo bar baz"
+#        release_notes: "Foo bar baz"
         #release_notes_file: ...
         on:
           all_branches: false
