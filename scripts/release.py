@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     sys.exit(
         subprocess.run(
-            ['pyinstaller', 'main.py', '--add-data', add_data_contents, '--hidden', '-import=configparser',
+            ['pyinstaller', 'main.py', '--add-data', add_data_contents, '--hidden-import=configparser',
              '--noconfirm', '--onefile', '--name sessh']
         ).returncode
     )
