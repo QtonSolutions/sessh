@@ -380,6 +380,9 @@ if __name__ == '__main__':
         if args.action == 'connect':
             sys.exit(connect_to_instance(args.instance, args.public))
     except Exception as e:
+        if args.debug:
+            raise e
+
         print(e)
         sys.exit(1)
 
