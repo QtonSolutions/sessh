@@ -4,7 +4,9 @@ matrix:
   include:
     - name: "Python 3.7.1 on Xenial Linux"
       python: 3.7           # this works for Linux but is ignored on macOS or Windows
-      before_deploy: "gzip -c dist/sessh > dist/sessh-${TRAVIS_OS_NAME}.gz"
+      before_deploy: &nix_before_deploy
+        - "chmod +x dist/sessh"
+        - "gzip -c dist/sessh > dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz"
       deploy: &deploy_base
         provider: releases
         skip_cleanup: true
@@ -25,7 +27,7 @@ matrix:
       os: osx
       osx_image: xcode11    # Python 3.7.4 running on macOS 10.14.4
       language: shell       # 'language: python' is an error on Travis CI macOS
-      before_deploy: "gzip -c dist/sessh > dist/sessh-${TRAVIS_OS_NAME}.gz"
+      *nix_before_deploy
       deploy:
         <<: *deploy_base
 #    - name: "Python 3.7.4 on Windows"
