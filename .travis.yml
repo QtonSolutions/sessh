@@ -58,10 +58,13 @@ matrix:
       before_deploy: gzip -c dist/sessh > dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz
       deploy:
         <<: *deploy_base
-#    - name: "Python 3.7.4 on Windows"
-#      os: windows           # Windows 10.0.17134 N/A Build 17134
-#      language: shell       # 'language: python' is an error on Travis CI Windows
-#      before_install:
-#        - choco install python
-#        - python -m pip install --upgrade pip
-#      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+    - name: "Python 3.7.4 on Windows"
+      os: windows           # Windows 10.0.17134 N/A Build 17134
+      language: shell       # 'language: python' is an error on Travis CI Windows
+      before_install:
+        - choco install python 7zip.portable
+        - python -m pip install --upgrade pip
+      before_deploy: 7za.exe a -tzip dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.zip dist/sessh.exe
+      deploy:
+        <<: *deploy_base
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
