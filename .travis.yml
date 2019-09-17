@@ -29,7 +29,8 @@ matrix:
       os: osx
       osx_image: xcode11    # Python 3.7.4 running on macOS 10.14.4
       language: shell       # 'language: python' is an error on Travis CI macOS
-      *nix_before_deploy
+      before_deploy:
+        <<: *nix_before_deploy
       deploy:
         <<: *deploy_base
 #    - name: "Python 3.7.4 on Windows"
