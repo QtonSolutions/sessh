@@ -27,3 +27,4 @@ deploy:
     secure: foo
   file_glob: true
   file: dist/*
+  draft: true
