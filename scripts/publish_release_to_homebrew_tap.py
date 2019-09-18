@@ -44,10 +44,9 @@ end'''
 
 
 def commit_and_push(version):
-    repository_path = './homebrew-tap'
-    subprocess.run(['git', 'add', 'Formula/sessh.rb'], cwd=repository_path)
-    subprocess.run(['git', 'commit', '-m', f'Publish {version}'], cwd=repository_path)
-    subprocess.run(['git', 'push'], cwd=repository_path)
+    subprocess.run(['git', 'add', 'Formula/sessh.rb'], cwd=HOMEBREW_TAP_PATH)
+    subprocess.run(['git', 'commit', '-m', f'Publish {version}'], cwd=HOMEBREW_TAP_PATH)
+    subprocess.run(['git', 'push'], cwd=HOMEBREW_TAP_PATH)
 
 
 def set_up_github_credentials():
@@ -66,8 +65,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    set_up_github_credentials()
     clone_homebrew_tap_repo()
+    set_up_github_credentials()
     sha256_digest = generate_sha256_digest()
     write_updated_brew_formula(args.version, sha256_digest)
     commit_and_push(args.version)
