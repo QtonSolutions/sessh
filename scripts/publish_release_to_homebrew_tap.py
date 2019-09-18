@@ -53,7 +53,7 @@ def set_up_github_credentials():
     github_auth_token = os.environ["GH_TOKEN"]
     subprocess.run(['git', 'config', 'credential.helper', 'store --file=.git/credentials'], cwd=HOMEBREW_TAP_PATH)
     with open(os.path.join(HOMEBREW_TAP_PATH, '.git/credentials'), 'w') as credentials_file:
-        credentials_file.write(f'https://${github_auth_token}:@github.com')
+        credentials_file.write(f'https://{github_auth_token}:@github.com')
     subprocess.run(['git', 'config', '--local', 'user.name', 'Travis CI'], cwd=HOMEBREW_TAP_PATH)
     subprocess.run(['git', 'config', '--local', 'user.email', 'travis@travis-ci.org'], cwd=HOMEBREW_TAP_PATH)
 
