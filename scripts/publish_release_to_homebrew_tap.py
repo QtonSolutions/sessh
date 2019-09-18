@@ -47,21 +47,16 @@ def commit_and_push(version):
     subprocess.run(['git', 'add', 'Formula/sessh.rb'], cwd=HOMEBREW_TAP_PATH)
     subprocess.run(['git', 'commit', '-m', f'Publish {version}'], cwd=HOMEBREW_TAP_PATH)
     subprocess.run(['git', 'push'], cwd=HOMEBREW_TAP_PATH)
-    subprocess.run(['pwd'], cwd=HOMEBREW_TAP_PATH)
-    subprocess.run(['ls', '-l', '.git'], cwd=HOMEBREW_TAP_PATH)
 
 
 def set_up_github_credentials():
     github_auth_token = os.environ["GH_TOKEN"]
     subprocess.run(['git', 'config', 'credential.helper', 'store --file=.git/credentials'], cwd=HOMEBREW_TAP_PATH)
-    path = os.path.join(HOMEBREW_TAP_PATH, '.git/credentials')
-    with open(path, 'w') as credentials_file:
-        print(f'Opened {path} for writing')
-        credentials = f'https://${github_auth_token}:@github.com'
-        print(f'Writing credentials: {credentials}')
-        credentials_file.write(credentials)
+    with open(os.path.join(HOMEBREW_TAP_PATH, '.git/credentials'), 'w') as credentials_file:
+        credentials_file.write(f'https://${github_auth_token}:@github.com')
     subprocess.run(['git', 'config', '--local', 'user.name', 'Travis CI'], cwd=HOMEBREW_TAP_PATH)
     subprocess.run(['git', 'config', '--local', 'user.email', 'travis@travis-ci.org'], cwd=HOMEBREW_TAP_PATH)
+    subprocess.run(['cat', '.git/credentials'], cwd=HOMEBREW_TAP_PATH)
 
 
 if __name__ == '__main__':
