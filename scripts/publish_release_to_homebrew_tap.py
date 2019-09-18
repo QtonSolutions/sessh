@@ -1,6 +1,9 @@
 import argparse
 import hashlib
+import os
 import subprocess
+
+HOMEBREW_TAP_PATH = './homebrew-tap'
 
 
 def clone_homebrew_tap_repo():
@@ -47,6 +50,15 @@ def commit_and_push(version):
     subprocess.run(['git', 'push'], cwd=repository_path)
 
 
+def set_up_github_credentials():
+    github_auth_token = os.environ["GH_TOKEN"]
+    subprocess.run(['git', 'config', 'credential.helper', 'store --file=.git/credentials'], cwd=HOMEBREW_TAP_PATH)
+    subprocess.run(['echo', f'https://${github_auth_token}:@github.com', '>', '.git/credentials'],
+                   cwd=HOMEBREW_TAP_PATH)
+    subprocess.run(['git', 'config', '--local', 'user.name', 'Travis CI'], cwd=HOMEBREW_TAP_PATH)
+    subprocess.run(['git', 'config', '--local', 'user.email', 'travis@travis-ci.org'], cwd=HOMEBREW_TAP_PATH)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Publish new release to QtonSolutions Homebrew tap")
     parser.add_argument('version', help="version tag")
@@ -54,6 +66,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    set_up_github_credentials()
     clone_homebrew_tap_repo()
     sha256_digest = generate_sha256_digest()
     write_updated_brew_formula(args.version, sha256_digest)
