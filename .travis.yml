@@ -22,7 +22,7 @@ matrix:
       python: 3.7           # this works for Linux but is ignored on macOS or Windows
       before_deploy:
         - gzip -c dist/sessh > dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz
-        - python3 scripts/create_release_notes.py ./CHANGELOG.md ./release_notes.md || python scripts/create_release_notes.py ./CHANGELOG.md ./release_notes.md
+        - python scripts/create_release_notes.py ./CHANGELOG.md ./release_notes.md
       deploy: &deploy_base
         provider: releases
         skip_cleanup: true
@@ -45,7 +45,7 @@ matrix:
 #        - echo "https://${GH_TOKEN}:@github.com" > .git/credentials
 #        - git config --local user.name "Travis CI"
 #        - git config --local user.email "travis@travis-ci.org"
-#        - python3 scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH} || python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
+#        - python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
 #        - git checkout develop
 #        - git add CHANGELOG.md
 #        - git commit -m "Update CHANGELOG.md after building ${TRAVIS_BRANCH}"
@@ -58,6 +58,12 @@ matrix:
       deploy:
         <<: *deploy_base
         edge: false
+      after_deploy:
+        - git config credential.helper "store --file=.git/credentials"
+        - echo "https://${GH_TOKEN}:@github.com" > .git/credentials
+        - git config --local user.name "Travis CI"
+        - git config --local user.email "travis@travis-ci.org"
+        - python3 scripts/publish_release_to_homebrew_tap.py "${TRAVIS_BRANCH}" "dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz"
     - name: "Python 3.7.4 on Windows"
       os: windows           # Windows 10.0.17134 N/A Build 17134
       language: shell       # 'language: python' is an error on Travis CI Windows
