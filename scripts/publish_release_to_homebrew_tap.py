@@ -46,7 +46,7 @@ end'''
 def commit_and_push(version):
     subprocess.run(['git', 'add', 'Formula/sessh.rb'], cwd=HOMEBREW_TAP_PATH)
     subprocess.run(['git', 'commit', '-m', f'Publish {version}'], cwd=HOMEBREW_TAP_PATH)
-    subprocess.run(['git', 'push', '-v'], cwd=HOMEBREW_TAP_PATH)
+    subprocess.run(['git', 'push'], cwd=HOMEBREW_TAP_PATH)
 
 
 def set_up_github_credentials():

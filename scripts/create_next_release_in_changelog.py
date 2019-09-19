@@ -26,9 +26,10 @@ def update_changelog():
 
 
 def commit_and_push(version):
+    subprocess.run(['git', 'checkout', 'develop'])
     subprocess.run(['git', 'add', 'CHANGELOG.md'])
     subprocess.run(['git', 'commit', '-m', f'Update for release {version}'])
-    subprocess.run(['git', 'push', '-v'])
+    subprocess.run(['git', 'push'])
 
 
 if __name__ == '__main__':
