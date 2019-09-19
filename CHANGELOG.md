@@ -1,4 +1,6 @@
 ## [Unreleased]
+
+## [v1.0.0-beta.26]
 ### Added
 - Display help and version information.
 - Catch exceptions and show more user friendly message.
