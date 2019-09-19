@@ -2,7 +2,8 @@ import argparse
 import re
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Extract release notes for unreleased version")
+    parser = argparse.ArgumentParser(description="Extract release notes for unreleased version so they can be used for "
+                                                 "Github release")
     parser.add_argument('changelog', help="path to CHANGELOG.md")
     parser.add_argument('release_notes', help="path to release notes to use for release")
 

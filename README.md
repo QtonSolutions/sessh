@@ -74,33 +74,23 @@ Select an instance to connect to [0]:
 - _sessh_ does not check whether the security group configuration would prevent you from connecting via SSH.
 - _sessh_ is not able to tell whether it should connect to the private IP address via a bastion, or to the public interface. Pass the `--public` argument if no bastion is required to connect to the instance.
 
+# Development
+Please update the `CHANGELOG.md` file when making a change to _sessh_. The following sections should be used:
+- *Added* for new features.
+- *Changed* for changes in existing functionality.
+- *Deprecated* for soon-to-be removed features.
+- *Removed* for now removed features.
+- *Fixed* for any bug fixes.
+- *Security* in case of vulnerabilities.
+
 # Building executables
 [PyInstaller](http://www.pyinstaller.org) is used to create single executable files to make installing _sessh_ simpler.
 
-Executables can only be built for the environment that PyInstaller is run in. E.g. a macOS version can only be built in macOS. Executables have been built for macOS and Windows, with Linux builds planned.
+Executables can only be built for the environment that PyInstaller is run in. E.g. a macOS version can only be built in macOS. Executables are currently automatically built by [https://travis-ci.org/QtonSolutions/sessh](Travis CI).
 
 ## Steps
-> _*Note:* sessh_ requires Python 3.x so make sure it is already installed on your system.
->
-1. Create the virtualenv
+1. Create a new release tag, follow the Github recommendation below. You can also check the previous [releases](https://github.com/QtonSolutions/sessh/releases/) to see examples.
+2. Push the tag and wait for the [Travis CI build](https://travis-ci.org/QtonSolutions/sessh) to complete.
 
-    ```bash
-    $ python 3 -m venv env
-    $ . env/bin/activate
-    ```
-    
-2. Install the packages
-    
-    `$ pip install -r requirements.txt`
-
-3. Create the executable
-    
-    *macOs*
-    
-    `$ pyinstaller main.py --add-data "config.default.py:." --hidden-import=configparser --noconfirm --onefile --name sessh`
-    
-    *Windows*  
-    
-    `$ pyinstaller main.py --add-data "config.default.py;." --hidden-import=configparser --noconfirm --onefile --name sessh`
-
-The executable file is at `./dist/sessh`
+> It’s common practice to prefix your version names with the letter v. Some good tag names might be v1.0 or v2.3.4.
+> If the tag isn’t meant for production use, add a pre-release version after the version name. Some good pre-release versions might be v0.2-alpha or v5.9-beta.3.
