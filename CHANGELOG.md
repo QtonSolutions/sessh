@@ -1,4 +1,6 @@
 ## [Unreleased]
+### Fixed
+- No longer crashes when no command argument has been specified. 
 
 ## [v1.0.0-beta.26]
 ### Added

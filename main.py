@@ -369,7 +369,7 @@ if __name__ == '__main__':
         if args.version:
             sys.exit(version_information())
 
-        logging_level = logging.DEBUG if args.debug else logging.WARNING
+        logging_level = logging.DEBUG if 'debug' in args and args.debug else logging.WARNING
         logging.basicConfig(level=logging_level)
 
         boto3.setup_default_session(region_name=aws_region)
