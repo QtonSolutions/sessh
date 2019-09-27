@@ -1,5 +1,5 @@
 import logging
-import subprocess
+import os
 
 
 class SessionManagerConnector:
@@ -12,9 +12,8 @@ class SessionManagerConnector:
 
     def connect(self) -> int:
         self._logger.debug(f"Connecting directly to {self._instance_id} using Session Manager")
-        return subprocess.run(
-            ['aws', 'ssm', 'start-session', '--target', self._instance_id, '--region', self._region]
-        ).returncode
+
+        return os.system(f'aws ssm start-session --target "{self._instance_id}" --region "{self._region}"')
 
 
 class SshBastionConnector:
@@ -27,8 +26,9 @@ class SshBastionConnector:
 
     def connect(self) -> int:
         target = self._get_target_user_and_host()
-        self._logger.debug(f"Connecting to {target} via {self._bastion_connection} with SSH")
-        return subprocess.run(['ssh', '-J', self._bastion_connection, target]).returncode
+        self._logger.debug(f"Connecting to {target} via {self._bastion_connection} using SSH")
+
+        return os.system(f'ssh -J {self._bastion_connection} {target}')
 
     def _get_target_user_and_host(self) -> str:
         return f'ec2-user@{self._private_ip_address}'
@@ -43,8 +43,9 @@ class SshDirectConnector(object):
 
     def connect(self) -> int:
         target = self._get_target_user_and_host()
-        self._logger.debug(f"Connecting directly to {target} with SSH")
-        return subprocess.run(['ssh', target]).returncode
+        self._logger.debug(f"Connecting directly to {target} using SSH")
+
+        return os.system(f'ssh {target}')
 
     def _get_target_user_and_host(self) -> str:
         return f'ec2-user@{self._public_ip_address}'
