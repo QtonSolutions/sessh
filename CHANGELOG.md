@@ -1,4 +1,6 @@
 ## [Unreleased]
+
+## [v1.0.0-beta.28]
 ### Fixed
 - No longer crashes when no command argument has been specified.
 - Using Ctrl+C to abort a command will be passed to the remote terminal, rather than terminating sessh. 
