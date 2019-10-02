@@ -25,7 +25,7 @@ install:
 
 # 'python' points to Python 2.7 on macOS but points to Python 3.7 on Linux and Windows
 # 'python3' is a 'command not found' error on Windows
-script: python3 scripts/release.py || python scripts/release.py
+script: python3 scripts/release.py ${TRAVIS_BRANCH} || python scripts/release.py ${TRAVIS_BRANCH}
 matrix:
   include:
     - name: "Python 3 on Xenial Linux"
