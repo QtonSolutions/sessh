@@ -30,10 +30,17 @@ BASTIONS = [
         'aws_account_alias': 'aws-account-alias',
         'bastion_host': 'bastion.dev.example.com',
         'bastion_user': 'ec2-user',
+        # Specify a path to keys used to connect to the bastion and destination host. These keys will automatically be
+        # made available when starting the SSH connection.
+        'ssh_keys': [
+            '/Users/username/.ssh/id_rsa',
+        ],
     },
     {
         'aws_account_alias': 'other-aws-account',
         'bastion_host': 'bastion.staging.example.com',
         'bastion_user': 'ec2-user',
+        # Make sure you `ssh-add` any required SSH keys if you don't specify them here.
+        'ssh_keys': None,
     },
 ]

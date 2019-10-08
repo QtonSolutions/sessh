@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional, List
 
 
 class SessionManagerConnector:
@@ -19,16 +20,21 @@ class SessionManagerConnector:
 class SshBastionConnector:
     """Connect to an EC2 instance via a bastion, using the private IP address."""
 
-    def __init__(self, bastion_connection: str, private_ip_address: str):
+    def __init__(self, bastion_connection: str, private_ip_address: str, ssh_key_paths: Optional[List[str]]):
         self._logger = logging.getLogger(__name__)
         self._bastion_connection = bastion_connection
         self._private_ip_address = private_ip_address
+        self._ssh_key_paths = ssh_key_paths
 
     def connect(self) -> int:
         target = self._get_target_user_and_host()
-        self._logger.debug(f"Connecting to {target} via {self._bastion_connection} using SSH")
+        key_details = ', '.join(self._ssh_key_paths) \
+            if self._ssh_key_paths \
+            else "any keys in the SSH authentication agent"
+        key_inclusion = f"-i {' '.join(self._ssh_key_paths)}" if self._ssh_key_paths else ''
+        self._logger.debug(f"Connecting to {target} via {self._bastion_connection} using SSH, with {key_details}")
 
-        return os.system(f'ssh -J {self._bastion_connection} {target}')
+        return os.system(f'ssh {key_inclusion} -J {self._bastion_connection} {target}')
 
     def _get_target_user_and_host(self) -> str:
         return f'ec2-user@{self._private_ip_address}'

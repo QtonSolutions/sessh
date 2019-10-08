@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
-import sys
-
 import argparse
-import boto3
 import logging
 import os
 import platform
 import shutil
-import texttable as tt
+import sys
 from datetime import datetime
 from enum import Enum
 from typing import List, Dict, Optional, Generator
+
+import boto3
+import texttable as tt
 
 import configuration
 import connector
@@ -316,9 +316,11 @@ def connect_to_instance(name_or_id: str, connect_to_public_ip_address: bool) -> 
             return connector.SshDirectConnector(matching_instance.public_ip).connect()
 
         else:
-            bastion_for_account = user_configuration.get_bastion_connection_details_for_account(client.get_account_id())
+            bastion_for_account = user_configuration.get_bastion_connection_details_for_account_id(client.get_account_id())
+            ssh_key_paths = user_configuration.get_ssh_key_paths_for_account_id(client.get_account_id())
 
-            return connector.SshBastionConnector(bastion_for_account, matching_instance.private_ip).connect()
+            return connector.SshBastionConnector(bastion_for_account, matching_instance.private_ip,
+                                                 ssh_key_paths).connect()
 
     if matching_instance.supports_session_manager():
         if not environment_checker.aws_cli_tools_installed():
