@@ -1,4 +1,6 @@
 ## [Unreleased]
+
+## [v1.0.0-beta.30]
 ### Added
 - The path to bastion SSH keys can be specified in the configuration file. You will not have to manually add any keys to the SSH authentication agent as long as the keys for the bastion and destination host are specified in the configuration.
 
