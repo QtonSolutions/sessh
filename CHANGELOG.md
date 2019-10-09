@@ -1,4 +1,6 @@
 ## [Unreleased]
+
+## [v1.0.0]
 ### Fixed
 - Remove debugging output.
 - Use configured SSH keys for direct SSH connections (ones not using a bastion).
