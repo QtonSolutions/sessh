@@ -305,6 +305,7 @@ def connect_to_instance(name_or_id: str, connect_to_public_ip_address: bool) -> 
 
     if matching_instance.supports_ssh():
         client = AccountMetadataClient()
+        ssh_key_paths = user_configuration.get_ssh_key_paths_for_account_id(client.get_account_id())
 
         if connect_to_public_ip_address:
             if matching_instance.public_ip is None:
@@ -313,11 +314,10 @@ def connect_to_instance(name_or_id: str, connect_to_public_ip_address: bool) -> 
 
                 return 10
 
-            return connector.SshDirectConnector(matching_instance.public_ip).connect()
+            return connector.SshDirectConnector(matching_instance.public_ip, ssh_key_paths).connect()
 
         else:
             bastion_for_account = user_configuration.get_bastion_connection_details_for_account_id(client.get_account_id())
-            ssh_key_paths = user_configuration.get_ssh_key_paths_for_account_id(client.get_account_id())
 
             return connector.SshBastionConnector(bastion_for_account, matching_instance.private_ip,
                                                  ssh_key_paths).connect()

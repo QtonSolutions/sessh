@@ -1,6 +1,7 @@
 ## [Unreleased]
 ### Fixed
 - Remove debugging output.
+- Use configured SSH keys for direct SSH connections (ones not using a bastion).
 
 ## [v1.0.0-beta.30]
 ### Added
