@@ -28,30 +28,48 @@ class SshBastionConnector:
 
     def connect(self) -> int:
         target = self._get_target_user_and_host()
-        key_details = ', '.join(self._ssh_key_paths) \
-            if self._ssh_key_paths \
-            else "any keys in the SSH authentication agent"
-        key_inclusion = f"-i {' '.join(self._ssh_key_paths)}" if self._ssh_key_paths else ''
+        key_details = _get_readable_ssh_key_details(self._ssh_key_paths)
+        key_inclusion = _get_ssh_key_inclusion_argument(self._ssh_key_paths)
         self._logger.debug(f"Connecting to {target} via {self._bastion_connection} using SSH, with {key_details}")
 
         return os.system(f'ssh {key_inclusion} -J {self._bastion_connection} {target}')
+
+    def _get_ssh_key_inclusion_argument(self):
+        return f"-i {' '.join(self._ssh_key_paths)}" if self._ssh_key_paths else ''
+
+    def _get_readable_ssh_key_details(self):
+        return ', '.join(self._ssh_key_paths) \
+            if self._ssh_key_paths \
+            else "any keys in the SSH authentication agent"
 
     def _get_target_user_and_host(self) -> str:
         return f'ec2-user@{self._private_ip_address}'
 
 
-class SshDirectConnector(object):
+class SshDirectConnector:
     """Connect to an EC2 instance via a bastion, using the public IP address."""
 
-    def __init__(self, public_ip_address: str):
+    def __init__(self, public_ip_address: str, ssh_key_paths: Optional[List[str]]):
         self._logger = logging.getLogger(__name__)
         self._public_ip_address = public_ip_address
+        self._ssh_key_paths = ssh_key_paths
 
     def connect(self) -> int:
         target = self._get_target_user_and_host()
-        self._logger.debug(f"Connecting directly to {target} using SSH")
+        key_details = _get_readable_ssh_key_details(self._ssh_key_paths)
+        key_inclusion = _get_ssh_key_inclusion_argument(self._ssh_key_paths)
 
-        return os.system(f'ssh {target}')
+        self._logger.debug(f"Connecting directly to {target} using SSH, with {key_details}")
+
+        return os.system(f'ssh {key_inclusion} {target}')
 
     def _get_target_user_and_host(self) -> str:
         return f'ec2-user@{self._public_ip_address}'
+
+
+def _get_ssh_key_inclusion_argument(ssh_key_paths: Optional[List[str]]) -> str:
+    return f"-i {' '.join(ssh_key_paths)}" if ssh_key_paths else ''
+
+
+def _get_readable_ssh_key_details(ssh_key_paths: Optional[List[str]]) -> str:
+    return ', '.join(ssh_key_paths) if ssh_key_paths else "any keys in the SSH authentication agent"
