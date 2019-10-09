@@ -78,7 +78,6 @@ class UserConfiguration:
     def get_bastion_connection_details_for_account_id(self, account_id: str) -> str:
         account_alias = self.get_account_alias(account_id)
         bastion_configuration = self.get_bastion_configuration_details_for_account(account_alias)
-        print(bastion_configuration)
         bastion_user = bastion_configuration['bastion_user']
         bastion_host = bastion_configuration['bastion_host']
 

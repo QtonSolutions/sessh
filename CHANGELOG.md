@@ -1,4 +1,6 @@
 ## [Unreleased]
+### Fixed
+- Remove debugging output.
 
 ## [v1.0.0-beta.30]
 ### Added
