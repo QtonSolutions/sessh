@@ -1,4 +1,6 @@
 ## [Unreleased]
+### Changed
+- Replace personal GitHub API token with one owned by Jenkins user.
 
 ## [v1.0.0]
 ### Fixed
