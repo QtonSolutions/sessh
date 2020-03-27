@@ -2,6 +2,9 @@
 ### Changed
 - Replace personal GitHub API token with one owned by Jenkins user.
 
+### Security
+- Update all dependencies to latest version. PyInstaller 3.5 has a security vulnerability. 
+
 ## [v1.0.0]
 ### Fixed
 - Remove debugging output.
