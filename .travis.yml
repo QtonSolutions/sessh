@@ -68,12 +68,14 @@ matrix:
         <<: *deploy_base
       # Update the QtonSolutions/homebrew-tap sessh formula with the new build information.
       after_deploy: python3 scripts/publish_release_to_homebrew_tap.py "${TRAVIS_BRANCH}" "dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz"
-    - name: "Python 3.8 on Windows"
+    - name: "Python 3.8.2 on Windows"
       os: windows
       language: shell
       before_install:
         - choco install 7zip.portable
-        - choco install python --version 3.8
+        # Pin to 3.8.2 because the env paths will need updating once 3.9 becomes stable and I can't see how to install
+        # any 3.8.x version.
+        - choco install python --version 3.8.2
         - python -m pip install --upgrade pip
       # Compress the executable so it can be added to the Github release
       before_deploy: 7za.exe a -tzip dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.zip dist/sessh.exe
