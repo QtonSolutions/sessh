@@ -28,8 +28,8 @@ install:
 script: python3 scripts/release.py ${TRAVIS_BRANCH} || python scripts/release.py ${TRAVIS_BRANCH}
 matrix:
   include:
-    - name: "Python 3 on Xenial Linux"
-      python: 3.7
+    - name: "Python 3.8 on Xenial Linux"
+      python: 3.8
       before_deploy:
         # Compress the executable so it can be added to the Github release
         - gzip -c dist/sessh > dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz
@@ -54,9 +54,11 @@ matrix:
         # Update the CHANGELOG.md to make all the [Unreleasd] notes part of this release and create a new [Unreleased]
         # section. This should only be done once per build so pick the Linux machine because it normally finishes first.
         - python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
+    # Python 3.8 is keg-only in Homebrew so it's a pain to update the paths to make it the default `python3`.
+    # 3.7.x should be fine until this changes.
     - name: "Python 3.7 on macOS"
       os: osx
-      osx_image: xcode11
+      osx_image: xcode11.3
       language: shell
       # Compress the executable so it can be added to the Github release
       before_deploy: gzip -c dist/sessh > dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz
@@ -66,11 +68,14 @@ matrix:
         edge: false
       # Update the QtonSolutions/homebrew-tap sessh formula with the new build information.
       after_deploy: python3 scripts/publish_release_to_homebrew_tap.py "${TRAVIS_BRANCH}" "dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz"
-    - name: "Python 3.7 on Windows"
+    - name: "Python 3.8.2 on Windows"
       os: windows
       language: shell
       before_install:
-        - choco install python 7zip.portable
+        - choco install 7zip.portable
+        # Pin to 3.8.2 because the env paths will need updating once 3.9 becomes stable and I can't see how to install
+        # any 3.8.x version.
+        - choco install python --version 3.8.2
         - python -m pip install --upgrade pip
       # Compress the executable so it can be added to the Github release
       before_deploy: 7za.exe a -tzip dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.zip dist/sessh.exe
@@ -79,4 +84,4 @@ matrix:
         file: dist/sessh-*.zip
         # travis-ci/dpl doesn't seem to work on Windows at the moment
         edge: false
-      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
