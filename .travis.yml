@@ -54,18 +54,18 @@ matrix:
         # Update the CHANGELOG.md to make all the [Unreleasd] notes part of this release and create a new [Unreleased]
         # section. This should only be done once per build so pick the Linux machine because it normally finishes first.
         - python scripts/create_next_release_in_changelog.py ./CHANGELOG.md ${TRAVIS_BRANCH}
-    - name: "Python 3.8 on macOS"
+    # Python 3.8 is keg-only in Homebrew so it's a pain to update the paths to make it the default `python3`.
+    # 3.7.x should be fine until this changes.
+    - name: "Python 3.7 on macOS"
       os: osx
       osx_image: xcode11.3
       language: shell
-      addons:
-        homebrew:
-          packages:
-            - python@3.8
       # Compress the executable so it can be added to the Github release
       before_deploy: python3 --version && gzip -c dist/sessh > dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz
       deploy:
         <<: *deploy_base
+        # Use the regular (non travis-ci/dpl) release mechanism to avoid some strange errors.
+        edge: false
       # Update the QtonSolutions/homebrew-tap sessh formula with the new build information.
       after_deploy: python3 scripts/publish_release_to_homebrew_tap.py "${TRAVIS_BRANCH}" "dist/sessh-${TRAVIS_BRANCH}-${TRAVIS_OS_NAME}.gz"
     - name: "Python 3.8.2 on Windows"
